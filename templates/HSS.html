@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    HSS Calculator
+{% endblock %}
+
+{% block main %}
+
+    <meta id="my-data" data-shapes="{{shapes}}">
+
+    <form action="/HSS" method="post" style = "box-sizing: border-box;height: 0px;">
+        <div class="form-group">
+            <p>Select HSS Size:</p>
+            <select name = "size" class = "selectpicker form-control">
+                {% for HSS_shape in HSS_list %}
+                <option value = "{{HSS_shape}}">{{HSS_shape}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class = "form-group">
+            <p>Select Axis of applied force:</p>
+            <select name = "axis" class = "selectpicker form-control">
+                <option value = "X_axis">X-X (Strong Axis)</option>
+                <option value = "Y_axis">Y-Y (Weak Axis)</option>
+            </select>
+        </div>
+         <div class = "form-group">
+            <p>Factored Moment (Assumed 0 if no Input)[k-ft]:</p>
+            <input autocomplete = "off" autofocus class = "form-control" name ="Mu" placeholder = "Max Moment" type = "text"/>
+        </div>
+        <button class="btn btn-primary" type="submit">Calculate</button>
+        <p></p>
+        <p>{{Mode}}</p>
+    </form>
+
+    <script src ></script>
+
+    <img src="static/HSS.png" align = "left"></img>
+    <table class = "table table-striped" style = "width:15%; position:absolute; top:400px; left:250 px" align ="left">
+        <thead>
+            <tr>
+                <th> Results [Unit]</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+                <tr>
+                    <td>&Phi;M<sub>n</sub> [k-ft]</td>
+                    <td>{{M_factored}}</td>
+                </tr>
+                <tr>
+                    <td>DCR</td>
+                    <td>{{DCR}}</td>
+                </tr>
+    </table>
+
+    <table class = "table table-striped" style = "width:20%" align ="right">
+        <thead>
+            <tr>
+                <th>Property [Unit]</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <td colspan = "9"></td>
+            </tr>
+        </tfoot>
+        <tbody>
+                <tr>
+                    <td>A[in<sup>2</sup>]</td>
+                    <td> {{A}}</td>
+                </tr>
+                <tr>
+                    <td>S<sub>xx</sub> [in<sup>3</sup>]</td>
+                    <td> {{S_x}}</td>
+                </tr>
+                <tr>
+                    <td>Z<sub>xx</sub> [in<sup>3</sup>]</td>
+                    <td> {{Z_x}}</td>
+                </tr>
+                <tr>
+                    <td>I<sub>xx</sub> [in<sup>4</sup>]</td>
+                    <td>{{I_x}}</td>
+                </tr>
+                <tr>
+                    <td>S<sub>yy</sub> [in<sup>3</sup>]</td>
+                    <td>{{S_y}}</td>
+                </tr>
+                <tr>
+                    <td>Z<sub>yy</sub> [in<sup>3</sup>]</td>
+                    <td>{{Z_y}}</td>
+                </tr>
+                <tr>
+                    <td>I<sub>yy</sub> [in<sup>4</sup>]</td>
+                    <td>{{I_y}}</td>
+                </tr>
+                <tr>
+                    <td>F<sub>y</sub> [kip/in<sup>2</sup>]</td>
+                    <td>46</td>
+                </tr>
+        </tbody>
+
+    </table>
+{% endblock %}
+

@@ -1,0 +1,114 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Wide Flange Calculator
+{% endblock %}
+
+{% block main %}
+
+    <meta id="my-data" data-shapes="{{shapes}}">
+
+    <form action="/WF" method="post" style = "box-sizing: border-box;height: 0px;">
+        <div class="form-group">
+            <p>Select Wide Flange Size & Grade:</p>
+            <select name = "size" class = "selectpicker form-control">
+                {% for WF_shape in WF_list %}
+                <option value = "{{WF_shape}}">{{WF_shape}}</option>
+                {% endfor %}
+            </select>
+            <select name = "grade" class = "selectpicker form-control">
+                <option value = "A36">ASTM A36 (Grade 36)</option>
+                <option value = "A572">ASTM 572 (Grade 50)</option>
+            </select>
+        </div>
+        <div class = "form-group">
+            <p>Select Axis of applied force:</p>
+            <select name = "axis" class = "selectpicker form-control">
+                <option value = "X_axis">X-X (Strong Axis)</option>
+                <option value = "Y_axis">Y-Y (Weak Axis)</option>
+            </select>
+        </div>
+        <div class = "form-group">
+            <p>Input Maximum Unbraced Length Lb [ft]:</p>
+            <input autocomplete = "off" autofocus class = "form-control" name ="Lb" placeholder = "Max. Unbraced Length" type = "text"/>
+        </div>
+        <div class = "form-group">
+            <p>Input Factored Moment [k-ft]:</p>
+            <input autocomplete = "off" autofocus class = "form-control" name ="Mu" placeholder = "Max Moment" type = "text"/>
+        </div>
+        <div class = "form-group">
+            <input autocomplete = "off" autofocus class = "form-control" name ="M_A" placeholder = "Moment @ 0.25L" type = "text" style = "width:15%"/>
+            <input autocomplete = "off" autofocus class = "form-control" name ="M_B" placeholder = "Moment @ 0.5L" type = "text" style = "width:10%"/>
+            <input autocomplete = "off" autofocus class = "form-control" name ="M_C" placeholder = "Moment @ 0.75L" type = "text" style = "width:15%"/>
+        </div>
+        <button class="btn btn-primary" type="submit">Calculate</button>
+        <p></p>
+        <p>{{Mode}}</p>
+    </form>
+
+    <script src ></script>
+
+    <img src="static/WF.png" align = "left"></img>
+    <table class = "table table-striped" style = "width:15%; position:absolute; top:400px; left:250 px" align ="left">
+        <thead>
+            <tr>
+                <th> Results [Unit]</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+                <tr>
+                    <td>&Phi;M<sub>n</sub> [k-ft]</td>
+                    <td>{{M_factored}}</td>
+                </tr>
+                <tr>
+                    <td>DCR</td>
+                    <td>{{DCR}}</td>
+                </tr>
+    </table>
+
+    <table class = "table table-striped" style = "width:20%" align ="right">
+        <thead>
+            <tr>
+                <th>Section Property [Unit]</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <td colspan = "9"></td>
+            </tr>
+        </tfoot>
+        <tbody>
+                <tr>
+                    <td>A[in<sup>2</sup>]</td>
+                    <td> {{A}}</td>
+                </tr>
+                <tr>
+                    <td>S<sub>xx</sub> [in<sup>3</sup>]</td>
+                    <td> {{S_x}}</td>
+                </tr>
+                <tr>
+                    <td>Z<sub>xx</sub> [in<sup>3</sup>]</td>
+                    <td> {{Z_x}}</td>
+                </tr>
+                <tr>
+                    <td>I<sub>xx</sub> [in<sup>4</sup>]</td>
+                    <td>{{I_x}}</td>
+                </tr>
+                <tr>
+                    <td>S<sub>yy</sub> [in<sup>3</sup>]</td>
+                    <td>{{S_y}}</td>
+                </tr>
+                <tr>
+                    <td>Z<sub>yy</sub> [in<sup>3</sup>]</td>
+                    <td>{{Z_y}}</td>
+                </tr>
+                <tr>
+                    <td>I<sub>yy</sub> [in<sup>4</sup>]</td>
+                    <td>{{I_y}}</td>
+                </tr>
+        </tbody>
+
+    </table>
+{% endblock %}
+

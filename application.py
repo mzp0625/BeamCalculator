@@ -373,7 +373,7 @@ def L2():
 @app.route("/HSS", methods = ["GET","POST"])
 def HSS():
     """Create a list of all rectangular and square HSS"""
-    HSS_sections = sections.query.filter(db.AISC_Manuak_Label.contains('HSS')).all()
+    HSS_sections = sections.query.filter(sections.AISC_Manual_Label.contains('HSS')).all()
     HSS_list = []
     for i in range(len(HSS_sections)):
         name = HSS_sections[i].AISC_Manual_Label
@@ -494,9 +494,9 @@ def HSS():
 def PIPE():
     """Create a list of all round HSS and PIPES"""
 
-    PIPE_sections = sections.query.filter(db.AISC_Manual_Label.contains('PIPE')).all()
+    PIPE_sections = sections.query.filter(sections.AISC_Manual_Label.contains('PIPE')).all()
 
-    HSS_sections = sections.query.filter(db.AISC_Manual_Label.contains('HSS')).all()
+    HSS_sections = sections.query.filter(sections.AISC_Manual_Label.contains('HSS')).all()
     PIPE_list = []
     for i in range(len(HSS_sections)):
         name = HSS_sections[i].AISC_Manual_Label
@@ -515,7 +515,7 @@ def PIPE():
         I = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].I_x), 2)
         OD = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].OD), 2)
         t = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].t), 2)
-        name = sections.query.filter_by(AISC_Manuak_Label = request.form.get("size"))[0].AISC_Manual_Label
+        name = sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].AISC_Manual_Label
 
         Mu = None2Zero(request.form.get("Mu"))
 

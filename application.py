@@ -12,6 +12,7 @@ from helpers import apology, isfloat, Cb_safe_div, Cap, None2Zero, contains
 
 # Configure application
 app = Flask(__name__)
+app.secret_key = 'some_secret'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 

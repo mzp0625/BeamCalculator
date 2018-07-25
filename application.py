@@ -43,7 +43,8 @@ class sections(db.Model):
     t_w = db.Column(db.Text)
     OD = db.Column(db.Text)
     t_des = db.Column(db.Text)
-
+    H_t = db.Column(db.Text)
+    B = db.Column(db.Text)
 
 
 
@@ -392,8 +393,9 @@ def HSS():
         Z_y = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].Z_y), 2)
         I_x = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].I_x), 2)
         I_y = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].I_y), 2)
-        OD = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].OD), 2)
+        H_t = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].H_t), 2)
         t = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].t_des), 2)
+        B = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].B), 2)
 
         # Get name of HSS beam
         name = sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].AISC_Manual_Label
@@ -418,8 +420,8 @@ def HSS():
             if axis == 'X_axis':
                 Z = Z_x
                 S = S_x
-                lambd_flange = b/t
-                lambd_web = h/t
+                lambd_flange = B/t
+                lambd_web = H_t/t
                 # Limit State of Yielding
                 Mp = Fy*Z
                 M_FLB = Mp
@@ -453,8 +455,8 @@ def HSS():
             elif axis == 'Y_axis':
                 Z = Z_y
                 S = S_y
-                lambd_flange = h/t
-                lambd_web = b/t
+                lambd_flange = H_t/t
+                lambd_web = B/t
                 # Limit State of Yielding
                 Mp = Fy*Z
                 M_FLB = Mp
@@ -514,7 +516,7 @@ def PIPE():
         Z = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].Z_x), 2)
         I = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].I_x), 2)
         OD = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].OD), 2)
-        t = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].t), 2)
+        t = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].t_des), 2)
         name = sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].AISC_Manual_Label
 
         Mu = None2Zero(request.form.get("Mu"))

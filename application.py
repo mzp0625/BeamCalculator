@@ -1,4 +1,5 @@
-from cs50 import SQL
+import os
+from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, flash, redirect, render_template, request, session, jsonify
 from flask_session import Session
 from tempfile import mkdtemp
@@ -12,8 +13,39 @@ from helpers import apology, isfloat, Cb_safe_div, Cap, None2Zero, contains
 # Configure application
 app = Flask(__name__)
 app.secret_key = 'some_secret'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Ensure responses aren't cached
+
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+db = SQLAlchemy(app)
+
+
+# Maybe need to create a beam class?
+class sections(db.Model):
+    AISC_Manual_Label = db.Column(db.Text, primary_key=True, nullable = False)
+    Type = db.Column(db.Text)
+    A = db.Column(db.Text)
+    S_x = db.Column(db.Text)
+    S_y = db.Column(db.Text)
+    Z_x = db.Column(db.Text)
+    Z_y = db.Column(db.Text)
+    I_x = db.Column(db.Text)
+    I_y = db.Column(db.Text)
+    b_f = db.Column(db.Text)
+    t_f = db.Column(db.Text)
+    r_ts = db.Column(db.Text)
+    J = db.Column(db.Text)
+    h_o = db.Column(db.Text)
+    C_w = db.Column(db.Text)
+    r_y = db.Column(db.Text)
+    k_des = db.Column(db.Text)
+    d = db.Column(db.Text)
+    t_w = db.Column(db.Text)
+    OD = db.Column(db.Text)
+    t_des = db.Column(db.Text)
+
+
+
 
 
 @app.after_request
@@ -22,10 +54,6 @@ def after_request(response):
     response.headers["Expires"] = 0
     response.headers["Pragma"] = "no-cache"
     return response
-
-
-# Configure CS50 Library to use SQLite database
-db = SQL("sqlite:///beams.db")
 
 
 @app.route("/", methods = ["GET","POST"])
@@ -65,33 +93,25 @@ def index():
 # Pages of different shapes
 @app.route("/WF", methods = ["GET","POST"])
 def WF():
-    WF_sections = db.execute("SELECT AISC_Manual_Label FROM properties \
-                                    WHERE AISC_Manual_Label LIKE '%W%'\
-                                    AND AISC_Manual_Label NOT LIKE '%WT%'")
+    WF_sections = sections.query.filter_by(Type = 'W').all()
     WF_list = []
     for i in range(len(WF_sections)):
-        WF_list.append(WF_sections [i]['AISC_Manual_Label'])
+        WF_list.append(WF_sections [i].AISC_Manual_Label)
     if request.method == "GET":
         return render_template("WF.html", WF_list = WF_list)
     elif request.method == "POST":
         # get section properties from beams.db
-        A = round(float(db.execute("SELECT A FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['A']),2)
-        S_x = round(float(db.execute("SELECT S_x FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['S_x']),2)
-        S_y = round(float(db.execute("SELECT S_y FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['S_y']),2)
-        Z_x = round(float(db.execute("SELECT Z_x FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['Z_x']),2)
-        Z_y = round(float(db.execute("SELECT Z_y FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['Z_y']),2)
-        I_x = round(float(db.execute("SELECT I_x FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['I_x']),2)
-        I_y = round(float(db.execute("SELECT I_y FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['I_y']),2)
+
+        A = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].A), 2)
+        S_x = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].S_x), 2)
+        S_y = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].S_y), 2)
+        Z_x = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].Z_x), 2)
+        Z_y = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].Z_y), 2)
+        I_x = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].I_x), 2)
+        I_y = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].I_y), 2)
+
         # Get name of WF beam
-        name = db.execute("SELECT AISC_Manual_Label FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['AISC_Manual_Label']
+        name = sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].AISC_Manual_Label
         # steel grade, E
         E = 29000.0
         # resistance factor
@@ -142,26 +162,17 @@ def WF():
                         Z_y = Z_y, I_x = I_x, I_y = I_y)
         else:
             # additional properties from beams.db
-            b_f = float(db.execute("SELECT b_f FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['b_f'])
-            t_f = float(db.execute("SELECT t_flange FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['t_flange'])
-            r_ts = float(db.execute("SELECT r_ts FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['r_ts'])
-            J = float(db.execute("SELECT J FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['J'])
-            h_o = float(db.execute("SELECT h_o FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['h_o'])
-            C_w = float(db.execute("SELECT C_w FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['C_w'])
-            r_y = float(db.execute("SELECT r_y FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['r_y'])
-            k_des = float(db.execute("SELECT k_des FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['k_des'])
-            d = float(db.execute("SELECT d FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['d'])
-            t_w = float(db.execute("SELECT t_w FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['t_w'])
+            b_f = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].b_f), 2)
+            t_f = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].t_f), 2)
+            r_ts = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].r_ts), 2)
+            J = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].J), 2)
+            h_o = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].h_o), 2)
+            C_w = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].C_w), 2)
+            r_y = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].r_y), 2)
+            k_des = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].k_des), 2)
+            d = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].d), 2)
+            t_w = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].t_w), 2)
+
             h = d - 2*k_des
             # Initialize failure mode
             fail_mode = None
@@ -362,11 +373,10 @@ def L2():
 @app.route("/HSS", methods = ["GET","POST"])
 def HSS():
     """Create a list of all rectangular and square HSS"""
-    HSS_sections = db.execute("SELECT AISC_Manual_Label FROM properties \
-                                WHERE AISC_Manual_Label LIKE '%HSS%'")
+    HSS_sections = sections.query.filter(db.AISC_Manuak_Label.contains('HSS')).all()
     HSS_list = []
     for i in range(len(HSS_sections)):
-        name = HSS_sections[i]['AISC_Manual_Label']
+        name = HSS_sections[i].AISC_Manual_Label
         if name.count('X') == 2: # Square or rectangular HSS
             HSS_list.append(name)
 
@@ -375,27 +385,19 @@ def HSS():
 
     elif request.method == "POST":
             # get section properties from beams.db
-        A = round(float(db.execute("SELECT A FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['A']),2)
-        S_x = round(float(db.execute("SELECT S_x FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['S_x']),2)
-        S_y = round(float(db.execute("SELECT S_y FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['S_y']),2)
-        Z_x = round(float(db.execute("SELECT Z_x FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['Z_x']),2)
-        Z_y = round(float(db.execute("SELECT Z_y FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['Z_y']),2)
-        I_x = round(float(db.execute("SELECT I_x FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['I_x']),2)
-        I_y = round(float(db.execute("SELECT I_y FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['I_y']),2)
-        OD = round(float(db.execute("SELECT OD FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['OD']),2)
-        t = round(float(db.execute("SELECT t_des FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['t_des']),2)
-        # Get name of WF beam
-        name = db.execute("SELECT AISC_Manual_Label FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['AISC_Manual_Label']
+        A = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].A), 2)
+        S_x = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].S_x), 2)
+        S_y = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].S_y), 2)
+        Z_x = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].Z_x), 2)
+        Z_y = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].Z_y), 2)
+        I_x = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].I_x), 2)
+        I_y = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].I_y), 2)
+        OD = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].OD), 2)
+        t = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].t_des), 2)
+
+        # Get name of HSS beam
+        name = sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].AISC_Manual_Label
+
         # steel grade, E
         E = 29000.0
         # resistance factor
@@ -491,36 +493,30 @@ def HSS():
 @app.route("/PIPE", methods = ["GET","POST"])
 def PIPE():
     """Create a list of all round HSS and PIPES"""
-    PIPE_sections = db.execute("SELECT AISC_Manual_Label FROM properties \
-                                WHERE AISC_Manual_Label LIKE '%PIPE%'")
-    HSS_sections = db.execute("SELECT AISC_Manual_Label FROM properties \
-                                WHERE AISC_Manual_Label LIKE '%HSS%'")
+
+    PIPE_sections = sections.query.filter(db.AISC_Manual_Label.contains('PIPE')).all()
+
+    HSS_sections = sections.query.filter(db.AISC_Manual_Label.contains('HSS')).all()
     PIPE_list = []
     for i in range(len(HSS_sections)):
-        name = HSS_sections[i]['AISC_Manual_Label']
+        name = HSS_sections[i].AISC_Manual_Label
         if name.count('X') == 1: # Square or rectangular HSS
             PIPE_list.append(name)
     for i in range(len(PIPE_sections)):
-        PIPE_list.append(PIPE_sections[i]['AISC_Manual_Label'])
+        PIPE_list.append(PIPE_sections[i].AISC_Manual_Label)
 
     if request.method == "GET":
         return render_template("PIPE.html", PIPE_list = PIPE_list)
 
     elif request.method =="POST":
-        A = round(float(db.execute("SELECT A FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['A']),2)
-        S = round(float(db.execute("SELECT S_x FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['S_x']),2)
-        Z = round(float(db.execute("SELECT Z_x FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['Z_x']),2)
-        I = round(float(db.execute("SELECT I_x FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['I_x']),2)
-        OD = round(float(db.execute("SELECT OD FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['OD']),2)
-        t = round(float(db.execute("SELECT t_des FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['t_des']),2)
-        name = db.execute("SELECT AISC_Manual_Label FROM properties WHERE AISC_Manual_Label = :size",\
-                        size = request.form.get("size"))[0]['AISC_Manual_Label']
+        A = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].A), 2)
+        S = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].S_x), 2)
+        Z = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].Z_x), 2)
+        I = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].I_x), 2)
+        OD = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].OD), 2)
+        t = round(float(sections.query.filter_by(AISC_Manual_Label = request.form.get("size"))[0].t), 2)
+        name = sections.query.filter_by(AISC_Manuak_Label = request.form.get("size"))[0].AISC_Manual_Label
+
         Mu = None2Zero(request.form.get("Mu"))
 
         shape, Fy, E, fail_mode, M_factored, DCR, Mode, phi = None, None, 29000, None, None, None, None, 0.90
@@ -587,7 +583,36 @@ def errorhandler(e):
     """Handle error"""
     return apology(e.name, e.code)
 
+class SQL(object):
+    def __init__(self, url):
+        try:
+            self.engine = sqlalchemy.create_engine(url)
+        except Exception as e:
+            raise RuntimeError(e)
+    def execute(self, text, *multiparams, **params):
+        try:
+            statement = sqlalchemy.text(text).bindparams(*multiparams, **params)
+            result = self.engine.execute(str(statement.compile(compile_kwargs={"literal_binds": True})))
+            # SELECT
+            if result.returns_rows:
+                rows = result.fetchall()
+                return [dict(row) for row in rows]
+            # INSERT
+            elif result.lastrowid is not None:
+                return result.lastrowid
+            # DELETE, UPDATE
+            else:
+                return result.rowcount
+        except sqlalchemy.exc.IntegrityError:
+            return None
+        except Exception as e:
+            raise RuntimeError(e)
 
 # listen for errors
 for code in default_exceptions:
     app.errorhandler(code)(errorhandler)
+
+if __name__ == '__main__':
+ app.debug = True
+ port = int(os.environ.get("PORT", 5000))
+ app.run(host='0.0.0.0', port=port)

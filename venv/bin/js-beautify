@@ -1,0 +1,7 @@
+#!/Users/mma/Desktop/BeamCalculator/venv/bin/python3
+#
+# Stub script to run jsbeautifier
+#
+import sys
+from jsbeautifier import main
+sys.exit(main())

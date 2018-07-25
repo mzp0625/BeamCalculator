@@ -26,6 +26,7 @@ Flask-Session==0.3.1
 Flask-Silk==0.2
 Flask-SQLAlchemy==2.2
 future==0.16.0
+gunicorn==19.9.0
 help50==2.0.0
 html5lib==0.999999999
 icdiff==1.9.1
@@ -56,6 +57,7 @@ pexpect==4.2.1
 Pillow==4.2.1
 pipdate==0.2.2
 plotly==2.0.14
+psycopg2==2.7.5
 ptyprocess==0.5.2
 pycodestyle==2.3.1
 pycparser==2.18
